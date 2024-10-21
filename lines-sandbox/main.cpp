@@ -223,9 +223,27 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 255, 255, 0 }
 				);
 			} break;
-
-			//TODO: your own sample cases here?
-			//TODO: your own sample cases here?
+			case 5: {
+				// Vertical line that extands out of screen
+				draw_line_solid( surface, 
+					{ fbwidth/2.f, -50.f }, { fbwidth/2.f, fbheight + 50.f },
+					{ 255, 255, 0 }
+				);
+			} break;
+			case 6: {
+				// Horizontal line that extands out of screen
+				draw_line_solid( surface, 
+					{ -50.f, fbheight/2.f }, { fbwidth + 50.f, fbheight/2.f },
+					{ 255, 255, 0 }
+				);
+			} break;
+			case 7: {
+				// Diagonal line partially off-screen
+				draw_line_solid( surface, 
+					{ fbwidth/4.f, fbheight/4.f }, { fbwidth + 100.f, fbheight + 100.f },
+					{ 255, 255, 0 } 
+			);
+			} break;
 		}
 		
 		context.draw( surface );
