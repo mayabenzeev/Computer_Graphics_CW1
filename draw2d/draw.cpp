@@ -6,17 +6,54 @@
 
 #include "surface.hpp"
 
+// Helper Functions Declarations
+bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f aMin, Vec2f aMax );
+int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax );
+
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	// Define the clipping region
+	Vec2f aMin{0, 0};
+	Vec2f aMax{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
+	
+	// Clipping
+    if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, aMin, aMax)) 
+	{
+        return; // No need to draw the line
+    }
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aBegin;   // is properly implemented.
-	(void)aEnd;
-	(void)aColor;
+	// Calculate the length of the line in each direction
+	int dx = abs(aEnd.x - aBegin.x); 
+	int dy = abs(aEnd.y - aBegin.y);
+	// Calculate the direction in which to step along each axis
+	int sx = (aBegin.x < aEnd.x) ? 1 : -1;
+	int sy = (aBegin.y < aEnd.y) ? 1 : -1;
+	int error = dx - dy; // Calculate the error at the start
+
+	for (;;)
+	{
+		// Set the current pixel color
+		aSurface.set_pixel_srgb(aBegin.x, aBegin.y, aColor);
+		// Check if the endpoint has been reached
+		if (aBegin.x == aEnd.x && aBegin.y == aEnd.y)
+		{
+			break;
+		}
+
+		// Step wise error calculation for keeping calculations in integer space
+		int error2 = error * 2; 
+		// Check which direction to move in
+		if (error2 > -dy)
+		{
+			error -= dy;
+			aBegin.x += sx;
+		}
+		if (error2 < dx)
+		{
+			error += dx;
+			aBegin.y += sy;
+		}
+	}
 }
 
 void draw_triangle_wireframe( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorU8_sRGB aColor )
@@ -88,4 +125,89 @@ void draw_rectangle_outline( Surface& aSurface, Vec2f aMinCorner, Vec2f aMaxCorn
 	(void)aMinCorner;
 	(void)aMaxCorner;
 	(void)aColor;
+}
+
+// Helper Functions Implementations
+bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f aMin, Vec2f aMax )
+{
+	// Compute the region codes for the two points
+	int beginCode = get_point_region_code(aBegin, aMin, aMax);
+	int endCode = get_point_region_code(aEnd, aMin, aMax);
+
+	// If the line is completely outside the window it will be discarded
+	if ((beginCode & endCode) != 0)
+	{
+		return false;
+	}
+
+	// If the line is completely inside the window no need to clip
+	if ((beginCode | endCode) == 0)
+	{
+		return true;
+	}
+       
+	float dx = aEnd.x - aBegin.x;
+	float dy = aEnd.y - aBegin.y;
+
+	// If a point is outside the left boundary - if bit 1 is "1"
+	if (beginCode & 1)
+	{
+		aBegin.x = aMin.x;
+		aBegin.y += (dy / dx) * (aMin.x - aBegin.x);
+	}
+	else if (endCode & 1)
+	{
+		aEnd.x = aMin.x;
+		aEnd.y += (dy / dx) * (aMin.x - aEnd.x);
+	}
+
+	// If a point is outside the right boundary - if bit 2 is "1"
+	if (beginCode & 2)
+	{
+		aBegin.x = aMax.x;
+		aBegin.y += dy * (aMax.x - aBegin.x) / dx;
+	}
+	else if (endCode & 2)
+	{
+		aEnd.x = aMax.x;
+		aEnd.y += dy * (aMax.x - aEnd.x) / dx;
+	}
+
+	// If a point is outside the bottom boundary - if bit 3 is "1"
+	if (beginCode & 4)
+	{
+		aBegin.y = aMin.y;
+		aBegin.x += dx * (aMin.y - aBegin.y) / dy;
+	}
+	else if (endCode & 4)
+	{
+		aEnd.y = aMin.y;
+		aEnd.x += dx * (aMin.y - aEnd.y) / dy;
+	}
+
+	// If a point is outside the top boundary - if bit 4 is "1"
+	if (beginCode & 8)
+	{
+		aBegin.y = aMax.y;
+		aBegin.x += dx * (aMax.y - aBegin.y) / dy;
+	}
+	else if (endCode & 8)
+	{
+		aEnd.y = aMax.y;
+		aEnd.x += dx * (aMax.y - aEnd.y) / dy;
+	}
+
+	return true;
+}
+
+int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax )
+{
+	// Calculate region code for point
+	// Point initially is considered "inside" - code is 0000
+	int code = 0;
+	if (aPoint.x < aMin.x) code |= 1; // Set the left bit
+	if (aPoint.x > aMax.x) code |= 2; // Set the right bit
+	if (aPoint.y < aMin.y) code |= 4; // Set the bottom bit
+	if (aPoint.y > aMax.y) code |= 8; // Set the top bit
+	return code;
 }
