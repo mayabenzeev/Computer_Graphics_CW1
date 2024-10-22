@@ -26,6 +26,8 @@ void Background::update( Vec2f aPosition, Vec2f aMovementDelta )
 
 	// Store current position
 	mCurrentPosition = aPosition;
+	printf("Background updated with player position: (%f, %f)\n", mCurrentPosition.x, mCurrentPosition.y);
+
 }
 
 void Background::draw( Surface& aSurface )
