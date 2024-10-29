@@ -12,46 +12,50 @@ int get_point_region_code( Vec2f aPoint, Vec2f minPoint, Vec2f aMax );
 
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
+	printf("points trying to draw: (%f, %f), (%f, %f)\n", aBegin.x, aBegin.y, aEnd.x, aEnd.y); // logging
 	// Define the clipping region
 	Vec2f minPoint{0, 0};
 	Vec2f maxPoint{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
-	printf("points trying to draw: (%f, %f), (%f, %f)\n", aBegin.x, aBegin.y, aEnd.x, aEnd.y);
+	
 	// Clipping
     if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, minPoint, maxPoint)) 
 	{
         return; // No need to draw the line
     }
 
-	// Calculate the length of the line in each direction
-	int dx = abs(aEnd.x - aBegin.x); 
-	int dy = abs(aEnd.y - aBegin.y);
-	// Calculate the direction in which to step along each axis
-	int sx = (aBegin.x < aEnd.x) ? 1 : -1;
-	int sy = (aBegin.y < aEnd.y) ? 1 : -1;
-	int error = dx - dy; // Calculate the error at the start
+	// Rounds the float coordinates to the nearest integer coordinates
+    int x1 = static_cast<int>(std::round(aBegin.x));
+    int y1 = static_cast<int>(std::round(aBegin.y));
+    int x2 = static_cast<int>(std::round(aEnd.x));
+    int y2 = static_cast<int>(std::round(aEnd.y));
 
-	for (;;)
+	// Calculate the length of the line in each direction
+	int dx = abs(x2 - x1); 
+	int dy = -abs(y2 - y1);
+	// Calculate the direction in which to step along each axis
+	int sx = x1 < x2 ? 1 : -1;
+	int sy = y1 < y2 ? 1 : -1;
+	int error = dx + dy; // Calculate the error at the start
+
+	while (true)
 	{
-		// Set the current pixel color
-		aSurface.set_pixel_srgb(aBegin.x, aBegin.y, aColor);
-		// Check if the endpoint has been reached
-		if (aBegin.x == aEnd.x && aBegin.y == aEnd.y)
+		aSurface.set_pixel_srgb(x1, y1, aColor); // Set the current pixel color
+		if (x1 == x2 && y1 == y2) // Check if the endpoint has been reached
 		{
 			break;
 		}
 
-		// Step wise error calculation for keeping calculations in integer space
-		int error2 = error * 2; 
+		int error2 = error * 2; // Step-wise error evaluation
 		// Check which direction to move in
-		if (error2 > -dy)
+		if (error2 >= dy)
 		{
-			error -= dy;
-			aBegin.x += sx;
+			error += dy;
+			x1 += sx;
 		}
-		if (error2 < dx)
+		if (error2 <= dx)
 		{
 			error += dx;
-			aBegin.y += sy;
+			y1 += sy;
 		}
 	}
 }
