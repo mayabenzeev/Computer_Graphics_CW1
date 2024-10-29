@@ -7,17 +7,17 @@
 #include "surface.hpp"
 
 // Helper Functions Declarations
-bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f aMin, Vec2f aMax );
-int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax );
+bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f minPoint, Vec2f aMax );
+int get_point_region_code( Vec2f aPoint, Vec2f minPoint, Vec2f aMax );
 
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
 	// Define the clipping region
-	Vec2f aMin{0, 0};
-	Vec2f aMax{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
-	
+	Vec2f minPoint{0, 0};
+	Vec2f maxPoint{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
+	printf("points trying to draw: (%f, %f), (%f, %f)\n", aBegin.x, aBegin.y, aEnd.x, aEnd.y);
 	// Clipping
-    if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, aMin, aMax)) 
+    if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, minPoint, maxPoint)) 
 	{
         return; // No need to draw the line
     }
