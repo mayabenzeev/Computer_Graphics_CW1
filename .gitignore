@@ -1,1 +1,5 @@
+# Add these lines to your .gitignore
+_build_/
+*.o
+*.a
 bin/*
