@@ -9,6 +9,12 @@
 // Helper Functions Declarations
 bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f minPoint, Vec2f aMax );
 int get_point_region_code( Vec2f aPoint, Vec2f minPoint, Vec2f aMax );
+void sort_vertices_ascending_y_order( Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
+Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT);
+ColorF interpolate_color(ColorF& aC0, ColorF& aC1, float aT);
+void fill_top_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
+void fill_bottom_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
+ColorU8_sRGB convert_color_to_sRGB(ColorF aColor);
 
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
@@ -90,18 +96,28 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	sort_vertices_ascending_y_order(aP0, aP1, aP2, aC0, aC1, aC2); // Sort the vertices by y
+    float t = (aP2.y - aP0.y) / (aP1.y - aP0.y); // Calculate t the interpolation factor
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aP0;      // is properly implemented.
-	(void)aP1;
-	(void)aP2;
-	(void)aC0;
-	(void)aC1;
-	(void)aC2;
+	if (aP0.y == aP1.y) // If the triangle is a top flat triangle
+	{
+		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
+	}
+	else if (aP1.y == aP2.y) // If the triangle is a bottom flat triangle
+	{
+		//TODO: what about the last row ?????????????
+		fill_bottom_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
+	}
+	else
+	{
+		// Find P3, C3 - the intersection point of the boundary line and the triangle long edge.
+		Vec2f p3 = interpolate_line(aP0, aP1, aP2, t);
+		ColorF c3 = interpolate_color(aC0, aC1, t);
+
+		// Draw the top and bottom flat triangles
+		fill_top_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
+		fill_bottom_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+	}
 }
 
 
@@ -215,3 +231,85 @@ int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax )
 	if (aPoint.y > aMax.y) code |= 8; // Set the top bit
 	return code;
 }
+
+void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
+{
+	// Sort the vertices in ascending order of y-coordinates
+	if (aP0.y > aP1.y)
+	{
+		std::swap(aP0, aP1);
+		std::swap(aC0, aC1);
+	}
+	if (aP0.y > aP2.y)
+	{
+		std::swap(aP0, aP2);
+		std::swap(aC0, aC2);
+	}
+	if (aP1.y > aP2.y)
+	{
+		std::swap(aP1, aP2);
+		std::swap(aC1, aC2);
+	}
+}
+
+Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT)
+{
+	// Calculate the x-coordinate of the intersection point
+	float x = (1 - aT) * aP0.x + aT * aP1.x;
+    return Vec2f{x, aP2.y};
+}
+
+ColorF interpolate_color(ColorF& aC0, ColorF& aC1, float aT)
+{
+	// Calculate the interpolation color of the intersection point
+	float r = (1 - aT) * aC0.r + aT * aC1.r;
+	float g = (1 - aT) * aC0.g + aT * aC1.g;
+	float b = (1 - aT) * aC0.b + aT * aC1.b;
+	return ColorF{r, g, b};
+}
+void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
+{
+	float invslope1 = (aP1.x - aP0.x) / (aP1.y - aP0.y); // Inverse slope of the left edge
+	float invslope2 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of the right edge
+	float curx1 = aP0.x;
+	float curx2 = aP0.x;
+
+	// Iterate from top (y0) to bottom (y1 / y2) and fill the triangle 
+	for (float i=aP0.y; i>aP1.y; i -= 1.f)
+	{
+		// Draw a horizontal line from curx1 to curx2
+		for (int j=curx1; j<curx2; j++)
+		{
+			aSurface.set_pixel_srgb(j, i, convert_color_to_sRGB(interpolate_color(aC0, aC1, (aP0.y - i) / (aP0.y - aP1.y))));
+		}
+		curx1 -= invslope1;
+		curx2 -= invslope2;
+	}
+}
+void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
+{
+	float invslope1 = (aP1.x - aP2.x) / (aP1.y - aP2.y); // Inverse slope of the left edge
+	float invslope2 = (aP0.x - aP2.x) / (aP0.y - aP2.y); // Inverse slope of the right edge
+	float curx1 = aP2.x;
+	float curx2 = aP2.x;
+
+	// Iterate from bottom (y2) to top (y1 / y0) and fill the triangle
+	for (float i=aP2.y; i<=aP0.y; i += 1.f)
+	{
+		// Draw a horizontal line from curx1 to curx2
+		for (int j=curx1; j<curx2; j++)
+		{
+			aSurface.set_pixel_srgb(j, i, convert_color_to_sRGB(interpolate_color(aC0, aC1, (aP0.y - i) / (aP0.y - aP2.y))));
+		}
+		curx1 += invslope1;
+		curx2 += invslope2;
+	}
+}
+
+ColorU8_sRGB convert_color_to_sRGB(ColorF aColor)
+{
+	// Convert color to sRGB color
+	return ColorU8_sRGB{linear_to_srgb(aColor.r), linear_to_srgb(aColor.g), linear_to_srgb(aColor.b)};
+}
+
+
