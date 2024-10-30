@@ -31,30 +31,19 @@ Mat22f operator*( Mat22f const& aLeft, Mat22f const& aRight ) noexcept
 {
 	return Mat22f{
         aLeft._00 * aRight._00 + aLeft._01 * aRight._10,
-<<<<<<< HEAD
-		aLeft._00 * aRight._01 + aLeft._01 * aRight._11,
-		aLeft._10 * aRight._00 + aLeft._11 * aRight._10,
-		aLeft._10 * aRight._01 + aLeft._11 * aRight._11};
-=======
         aLeft._00 * aRight._01 + aLeft._01 * aRight._11, 
         aLeft._10 * aRight._00 + aLeft._11 * aRight._10,
         aLeft._10 * aRight._01 + aLeft._11 * aRight._11
     };
->>>>>>> eb20316
 }
 
 constexpr
 Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 {
 	return Vec2f{
-<<<<<<< HEAD
-		aLeft._00 * aRight.x + aLeft._01 * aRight.y,
-		aLeft._10 * aRight.x + aLeft._11 * aRight.y};
-=======
         aLeft._00 * aRight.x + aLeft._01 * aRight.y,
         aLeft._10 * aRight.x + aLeft._11 * aRight.y
     };
->>>>>>> eb20316
 }
 
 // Functions:
@@ -62,15 +51,9 @@ Vec2f operator*( Mat22f const& aLeft, Vec2f const& aRight ) noexcept
 inline
 Mat22f make_rotation_2d( float aAngle ) noexcept
 {
-<<<<<<< HEAD
-	float const c = std::cos( aAngle );
-	float const s = std::sin( aAngle );
-	return Mat22f{ c, -s, s, c };
-=======
 	float c = std::cos(aAngle);
     float s = std::sin(aAngle);
     return Mat22f{c, -s, s, c};
->>>>>>> eb20316
 }
 
 #endif // MAT22_HPP_1F974C02_D0D1_4FBD_B5EE_A69C88112088

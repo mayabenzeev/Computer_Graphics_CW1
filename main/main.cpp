@@ -284,9 +284,6 @@ namespace
 				glfwSetCursor( aWindow, nullptr );
 			}
 		}
-		printf("Input mode switched to: %s\n", (state->inputMode == EInputMode::piloting) ? "piloting" : "standard");
-		printf("Player position: (%f, %f), angle: %f\n", state->player.position.x, state->player.position.y, state->player.angle);
-
 	}
 
 	void glfw_callback_button_( GLFWwindow* aWindow, int aBut, int aAct, int )
@@ -318,11 +315,7 @@ namespace
 		{
 			Vec2f relative{ float(aX) - iwidth/2.f, iheight/2.f - float(aY) };
 			state->player.angle = std::atan2( relative.y, relative.x );
-			printf("Mouse movement relative: (%f, %f)\n", relative.x, relative.y);
-			printf("Player angle: %f\n", state->player.angle);
-
 		}
-		
 	}
 }
 

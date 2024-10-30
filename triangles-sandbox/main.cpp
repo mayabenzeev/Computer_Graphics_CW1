@@ -225,17 +225,8 @@ int main( int aArgc, char* aArgv[] ) try
 				);
 			} break;
 
-			case 4: {
-				// Just a basic triangle
-				draw_triangle_interp( surface, 
-					{ fbwidth/2.f, fbheight/2.f },
-					{ fbwidth/2.f - 50, fbheight/2.f - 100 },
-					{ fbwidth/2.f + 50, fbheight/2.f - 100 },
-					{ 1.f, 0.f, 0.f }, // Red
-					{ 0.f, 1.f, 0.f }, // Green
-					{ 0.f, 0.f, 1.f }  // Blue
-				);
-			} break;
+			//TODO: your own sample cases here?
+			//TODO: your own sample cases here?
 		}
 		
 		context.draw( surface );

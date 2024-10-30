@@ -15,11 +15,8 @@ inline
 void Surface::set_pixel_srgb( Index aX, Index aY, ColorU8_sRGB const& aColor )
 {
 	assert( aX < mWidth && aY < mHeight ); // IMPORTANT! This line must remain the first line in this function!
-	
-<<<<<<< HEAD
 	// aY = Surface::get_height() - aY - 1; // Flip the Y coordinate
-=======
->>>>>>> eb20316
+
 	Index pixleLinearIndex = get_linear_index(aX, aY); // Get the memorty location of the pixel at (aX, aY)
 	mSurface[0 + pixleLinearIndex] = aColor.r; // Set the red component
 	mSurface[1 + pixleLinearIndex] = aColor.g; // Set the green component
