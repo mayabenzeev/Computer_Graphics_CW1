@@ -185,7 +185,7 @@ int main( int aArgc, char* aArgv[] ) try
 
 		// Draw scene
 		surface.clear();
-
+		testId = 8;
 		switch( testId )
 		{
 			case 1: {
@@ -244,6 +244,16 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 255, 255, 0 } 
 			);
 			} break;
+<<<<<<< HEAD
+=======
+			case 8: {
+				// Try for debugging purpose (595.383423, 382.920715), (600.726990, 372.555084)
+				draw_line_solid( surface, 
+					{ 595.383423, 382.920715 }, { 600.726990, 372.555084 },
+					{ 255, 255, 0 }
+				); 
+			}
+>>>>>>> eb20316
 		}
 		
 		context.draw( surface );
