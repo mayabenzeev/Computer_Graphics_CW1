@@ -186,7 +186,7 @@ int main( int aArgc, char* aArgv[] ) try
 		// Draw scene
 		surface.clear();
 
-		testId = 1;
+		testId = 6;
 		switch( testId )
 		{
 			case 1: {
@@ -229,9 +229,9 @@ int main( int aArgc, char* aArgv[] ) try
 			case 4: {
 				// Flat top triangle
 				draw_triangle_interp( surface, 
-					{ 300.f, 400.f },   // Top-left
-					{ 500.f, 400.f },   // Top-right
-					{ 400.f, 200.f },   // Bottom vertex
+					{ 300.f, 400.f }, 
+					{ 500.f, 400.f },  
+					{ 400.f, 200.f },   
 					{ 1.f, 0.f, 0.f },  
 					{ 0.f, 1.f, 0.f },  
 					{ 0.f, 0.f, 1.f }   
@@ -241,12 +241,12 @@ int main( int aArgc, char* aArgv[] ) try
 			case 5: {
 				// Flat top triangle
 				draw_triangle_interp( surface, 
-					{ 400.f, 200.f },   // Top-left
-					{ 600.f, 200.f },   // Top-right
-					{ 500.f, 400.f },   // Bottom vertex
-					{ 1.f, 0.f, 0.f },  // Red
-					{ 0.f, 1.f, 0.f },  // Green
-					{ 0.f, 0.f, 1.f }   // Blue
+					{ 400.f, 200.f },  
+					{ 600.f, 200.f }, 
+					{ 500.f, 400.f },
+					{ 1.f, 0.f, 0.f },
+					{ 0.f, 1.f, 0.f },
+					{ 0.f, 0.f, 1.f }
 				);
 			} break;
 

@@ -96,10 +96,11 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
 {
+	printf("Coordinates before call: aP0=(%f,%f) aP1=(%f,%f) aP1=(%f,%f)", aP0.x, aP0.y, aP1.x ,aP1.y, aP2.x,aP2.y);
 	sort_vertices_ascending_y_order(aP0, aP1, aP2, aC0, aC1, aC2); // Sort the vertices by y
     float t = (aP1.y - aP0.y) / (aP2.y - aP0.y); // Calculate t the interpolation factor
 
-	if (aP1.y == aP2.y) // If the triangle is a bottom flat triangle
+	if (aP1.y == aP2.y) // If the triangle is a top flat triangle
 	{
 		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
 	}
@@ -259,8 +260,8 @@ void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF 
 Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT)
 {
 	// Calculate the x-coordinate of the intersection point
-	float x = aP0.x + aT * (aP2.x - aP0.x);
-	// float x = (1 - aT) * aP0.x + aT * aP1.x;
+	// float x = aP0.x + aT * (aP2.x - aP0.x);
+	float x = (1 - aT) * aP0.x + aT * aP2.x;
     return Vec2f{x, aP1.y};
 }
 
@@ -271,7 +272,7 @@ ColorF interpolate_color(const Vec2f& aP0, const Vec2f& aP1, const Vec2f& aP2, c
     float beta = ((aP2.y - aP0.y) * (aNewP.x - aP2.x) + (aP0.x - aP2.x) * (aNewP.y - aP2.y)) / denom;
     float gamma = 1.0f - alpha - beta;
 
-    // Interpolate color using barycentric coordinates
+    // Return the blended color by the weights
     return ColorF{
         alpha * aC0.r + beta * aC1.r + gamma * aC2.r,
         alpha * aC0.g + beta * aC1.g + gamma * aC2.g,
@@ -308,9 +309,9 @@ void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP
 void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
 {
     float invslope1 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of one edge
-    float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y); // Inverse slope of seconed edge
-    float curx1 = aP1.x;
-    float curx2 = aP2.x;
+    float invslope2 = (aP1.x - aP0.x) / (aP1.y - aP0.y); // Inverse slope of seconed edge
+    float curx1 = aP2.x;
+    float curx2 = aP1.x;
 	int width = aSurface.get_width();
     int height = aSurface.get_height();
 	ColorF interpolatedColor;
@@ -329,45 +330,6 @@ void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, 
 		curx2 -= invslope2;
 	}
 }
-// void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f p3, Vec2f aP1, ColorF aC0, ColorF c3, ColorF aC1) {
-//     float invslope1 = (aP1.x - aP0.x) / (aP1.y - aP0.y);
-//     float invslope2 = (aP1.x - p3.x) / (aP1.y - p3.y);
-
-//     float curx1 = aP0.x;
-//     float curx2 = p3.x;
-
-//     for (float scanlineY = aP0.y; scanlineY >= aP1.y; scanlineY--) {
-//         int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-//         int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-
-//         for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
-//             aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, c3, (scanlineY - aP0.y) / (aP1.y - aP0.y))));
-//         }
-//         curx1 -= invslope1;
-//         curx2 -= invslope2;
-//     }
-// }
-
-
-// void fill_top_flat_triangle(Surface &aSurface, Vec2f aP1, Vec2f p3, Vec2f aP2, ColorF aC1, ColorF c3, ColorF aC2) {
-//     float invslope1 = (aP2.x - p3.x) / (aP2.y - p3.y);
-//     float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y);
-
-//     float curx1 = p3.x;
-//     float curx2 = aP1.x;
-
-//     for (float scanlineY = p3.y; scanlineY <= aP2.y; scanlineY++) {
-//         int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-//         int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-
-//         for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
-//             aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC1, c3, (scanlineY - p3.y) / (aP2.y - p3.y))));
-//         }
-//         curx1 += invslope1;
-//         curx2 += invslope2;
-//     }
-// }
-
 
 ColorU8_sRGB convert_color_to_sRGB(ColorF aColor)
 {
