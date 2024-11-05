@@ -185,7 +185,7 @@ int main( int aArgc, char* aArgv[] ) try
 
 		// Draw scene
 		surface.clear();
-
+		// testId = 8;
 		switch( testId )
 		{
 			case 1: {

@@ -18,7 +18,6 @@ ColorU8_sRGB convert_color_to_sRGB(ColorF aColor);
 
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
-	printf("points trying to draw: (%f, %f), (%f, %f)\n", aBegin.x, aBegin.y, aEnd.x, aEnd.y); // logging
 	// Define the clipping region
 	Vec2f minPoint{0, 0};
 	Vec2f maxPoint{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
@@ -96,7 +95,6 @@ void draw_triangle_solid( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, Co
 
 void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
 {
-	printf("Coordinates before call: aP0=(%f,%f) aP1=(%f,%f) aP1=(%f,%f)", aP0.x, aP0.y, aP1.x ,aP1.y, aP2.x,aP2.y);
 	sort_vertices_ascending_y_order(aP0, aP1, aP2, aC0, aC1, aC2); // Sort the vertices by y
     float t = (aP1.y - aP0.y) / (aP2.y - aP0.y); // Calculate t the interpolation factor
 
@@ -284,18 +282,24 @@ void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP
     float curx1 = aP0.x;
     float curx2 = aP1.x;
     int height = aSurface.get_height();
+	int width = aSurface.get_width();
 	ColorF interpolatedColor;
 
+	// Clipping and Culling y-coordinates
+    float startY = std::max(aP0.y, 0.0f);
+    float endY = std::min(aP2.y, static_cast<float>(height));
+
 	// Iterate from bottom (y0/y1) to top (y2) and fill the triangle
-    for (float scanlineY = aP0.y; scanlineY < aP2.y; scanlineY++)
+    for (float scanlineY = startY; scanlineY < endY; scanlineY++)
     {
 		if (scanlineY >= 0 && scanlineY < height) { // Check that y isn't out of bounds
-			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-			int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
 
-			for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
-				interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
-				aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
+
+		for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(width - 1)); x++) {
+			interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
+			aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
 			}
 		}
 
@@ -311,19 +315,22 @@ void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, 
     float curx1 = aP2.x;
     float curx2 = aP1.x;
     int height = aSurface.get_height();
+	int width = aSurface.get_width();
 	ColorF interpolatedColor;
 
-
-	float startY = aP2.y - 1;
-	if (aIsTrivialCase) startY = aP2.y; // Decide whether to draw the first row of the triangle to prevent overlapping rendering
+	// Clipping and Culling y-coordinates
+	float startY = 0.0f;
+	if (!aIsTrivialCase) startY = std::max(aP2.y, startY); // Decide whether to draw the first row of the triangle to prevent overlapping rendering
+	else startY = std::max(aP2.y - 1, startY);
+    float endY = std::min(aP0.y, static_cast<float>(height + 1));
 	
 	// Iterate from top (y2/y1) to bottom (y0) and fill the triangle
-    for (float scanlineY = startY; scanlineY >= aP0.y; scanlineY--)
+    for (float scanlineY = startY; scanlineY >= endY; scanlineY--)
     {
 		if (scanlineY >= 0 && scanlineY < height) {  // Check that y isn't out of bounds
 			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
 			int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-			for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
+			for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(width - 1)); x++) {
 				interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
 				aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
 			
