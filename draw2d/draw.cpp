@@ -101,12 +101,12 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 
 	if (aP1.y == aP2.y) // If the triangle is a bottom flat triangle
 	{
-		fill_bottom_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
+		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
 	}
 	else if (aP0.y == aP1.y) // If the triangle is a bottom flat triangle
 	{
 		//TODO: what about the last row ?????????????
-		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
+		fill_bottom_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
 	}
 	else
 	{
@@ -115,8 +115,11 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 		ColorF c3 = interpolate_color(aC0, aC1, t);
 
 		// Draw the top and bottom flat triangles
-		fill_top_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
-		fill_bottom_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+		// fill_top_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
+		// fill_bottom_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+		fill_bottom_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
+        fill_top_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+
 	}
 }
 
@@ -255,8 +258,9 @@ void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF 
 Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT)
 {
 	// Calculate the x-coordinate of the intersection point
-	float x = (1 - aT) * aP0.x + aT * aP1.x;
-    return Vec2f{x, aP2.y};
+	float x = aP0.x + aT * (aP2.x - aP0.x);
+	// float x = (1 - aT) * aP0.x + aT * aP1.x;
+    return Vec2f{x, aP1.y};
 }
 
 ColorF interpolate_color(ColorF& aC0, ColorF& aC1, float aT)
@@ -270,25 +274,23 @@ ColorF interpolate_color(ColorF& aC0, ColorF& aC1, float aT)
 
 void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
 {
-    float invslope1 = (aP1.x - aP0.x) / (aP1.y - aP0.y); // Inverse slope of one edge
-    float invslope2 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of seconed edge
+    float invslope1 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of one edge
+    float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y); // Inverse slope of seconed edge
     float curx1 = aP0.x;
-    float curx2 = aP0.x;
+    float curx2 = aP1.x;
+	int width = aSurface.get_width();
+    int height = aSurface.get_height();
 
 	// Iterate from bottom (y0/y1) to top (y2) and fill the triangle
     for (float scanlineY = aP0.y; scanlineY <= aP2.y; scanlineY++)
     {
-        int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-        int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-		// Draw a horizontal line from curx1 to curx2
-        for (int x = fromX; x <= toX; x++)
-        {
-			if (x == 1279) {
-				printf("problem/n");
-			}
-			printf("filling pixel bottom flat: (%d, %d)\n", x, static_cast<int>(scanlineY)); // logging
-            aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, aC1, (scanlineY - aP0.y) / (aP2.y - aP0.y))));
-        }
+		int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+
+        for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
+			aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, aC1, (scanlineY - aP0.y) / (aP2.y - aP0.y))));
+		}
+
         curx1 += invslope1;
         curx2 += invslope2;
     }
@@ -298,24 +300,63 @@ void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, 
 {
     float invslope1 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of one edge
     float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y); // Inverse slope of seconed edge
-    float curx1 = aP2.x;
+    float curx1 = aP1.x;
     float curx2 = aP2.x;
+	int width = aSurface.get_width();
+    int height = aSurface.get_height();
 
 	// Iterate from top (y2/y1) to bottom (y0) and fill the triangle
     for (float scanlineY = aP2.y; scanlineY >= aP0.y; scanlineY--)
     {
-        int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-        int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-        // Draw a horizontal line from curx1 to curx2
-		for (int x = fromX; x <= toX; x++)
-        {
-			printf("filling pixel top flat: (%d, %d)\n", x, static_cast<int>(scanlineY)); // logging
-            aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, aC1, (aP2.y - scanlineY) / (aP2.y - aP0.y))));
-        }
-        curx1 -= invslope1;
-        curx2 -= invslope2;
-    }
+		int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
+			aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, aC1, (aP2.y - scanlineY) / (aP2.y - aP0.y))));
+		
+		}
+		curx1 -= invslope1;
+		curx2 -= invslope2;
+	}
 }
+// void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f p3, Vec2f aP1, ColorF aC0, ColorF c3, ColorF aC1) {
+//     float invslope1 = (aP1.x - aP0.x) / (aP1.y - aP0.y);
+//     float invslope2 = (aP1.x - p3.x) / (aP1.y - p3.y);
+
+//     float curx1 = aP0.x;
+//     float curx2 = p3.x;
+
+//     for (float scanlineY = aP0.y; scanlineY >= aP1.y; scanlineY--) {
+//         int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+//         int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+
+//         for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
+//             aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC0, c3, (scanlineY - aP0.y) / (aP1.y - aP0.y))));
+//         }
+//         curx1 -= invslope1;
+//         curx2 -= invslope2;
+//     }
+// }
+
+
+// void fill_top_flat_triangle(Surface &aSurface, Vec2f aP1, Vec2f p3, Vec2f aP2, ColorF aC1, ColorF c3, ColorF aC2) {
+//     float invslope1 = (aP2.x - p3.x) / (aP2.y - p3.y);
+//     float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y);
+
+//     float curx1 = p3.x;
+//     float curx2 = aP1.x;
+
+//     for (float scanlineY = p3.y; scanlineY <= aP2.y; scanlineY++) {
+//         int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+//         int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+
+//         for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(aSurface.get_width() - 1)); x++) {
+//             aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolate_color(aC1, c3, (scanlineY - p3.y) / (aP2.y - p3.y))));
+//         }
+//         curx1 += invslope1;
+//         curx2 += invslope2;
+//     }
+// }
+
 
 ColorU8_sRGB convert_color_to_sRGB(ColorF aColor)
 {

@@ -186,6 +186,7 @@ int main( int aArgc, char* aArgv[] ) try
 		// Draw scene
 		surface.clear();
 
+		testId = 1;
 		switch( testId )
 		{
 			case 1: {
@@ -225,8 +226,65 @@ int main( int aArgc, char* aArgv[] ) try
 				);
 			} break;
 
-			//TODO: your own sample cases here?
-			//TODO: your own sample cases here?
+			case 4: {
+				// Flat top triangle
+				draw_triangle_interp( surface, 
+					{ 300.f, 400.f },   // Top-left
+					{ 500.f, 400.f },   // Top-right
+					{ 400.f, 200.f },   // Bottom vertex
+					{ 1.f, 0.f, 0.f },  
+					{ 0.f, 1.f, 0.f },  
+					{ 0.f, 0.f, 1.f }   
+				);
+			} break;
+
+			case 5: {
+				// Flat top triangle
+				draw_triangle_interp( surface, 
+					{ 400.f, 200.f },   // Top-left
+					{ 600.f, 200.f },   // Top-right
+					{ 500.f, 400.f },   // Bottom vertex
+					{ 1.f, 0.f, 0.f },  // Red
+					{ 0.f, 1.f, 0.f },  // Green
+					{ 0.f, 0.f, 1.f }   // Blue
+				);
+			} break;
+
+			case 6: {
+				// Non-trivial triangle
+				draw_triangle_interp( surface, 
+					{ 250.f, 300.f },
+					{ 450.f, 500.f },
+					{ 650.f, 350.f },
+					{ 0.5f, 0.5f, 0.f },
+					{ 0.5f, 0.f, 0.5f },
+					{ 0.f, 0.5f, 0.5f }
+				);
+			} break;
+
+			case 7: {
+				// Triangle with one vertex out of screen
+				draw_triangle_interp( surface, 
+					{ fbwidth + 50.f, 100.f },
+					{ fbwidth / 2.f, fbheight - 50.f },
+					{ 100.f, fbheight / 2.f },
+					{ 1.f, 1.f, 0.f },
+					{ 1.f, 0.f, 1.f },
+					{ 0.f, 1.f, 1.f }
+				);
+			} break;
+
+			case 8: {
+				// Large triangle extending beyond all edges
+				draw_triangle_interp( surface, 
+					{ -100.f, -100.f },
+					{ fbwidth + 100.f, fbheight / 2.f },
+					{ fbwidth / 2.f, fbheight + 100.f },
+					{ 1.f, 0.f, 1.f },
+					{ 0.f, 1.f, 1.f },
+					{ 1.f, 1.f, 0.f }
+				);
+			} break;
 		}
 		
 		context.draw( surface );
