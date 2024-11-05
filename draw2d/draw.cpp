@@ -12,7 +12,7 @@ int get_point_region_code( Vec2f aPoint, Vec2f minPoint, Vec2f aMax );
 void sort_vertices_ascending_y_order( Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
 Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT);
 ColorF interpolate_color(const Vec2f& aP0, const Vec2f& aP1, const Vec2f& aP2, const ColorF& aC0, const ColorF& aC1, const ColorF& aC2, const Vec2f& aNewP);
-void fill_top_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
+void fill_top_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 ,bool aIsTrivialCase );
 void fill_bottom_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
 ColorU8_sRGB convert_color_to_sRGB(ColorF aColor);
 
@@ -102,11 +102,10 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 
 	if (aP1.y == aP2.y) // If the triangle is a top flat triangle
 	{
-		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
+		fill_top_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2, true);
 	}
 	else if (aP0.y == aP1.y) // If the triangle is a bottom flat triangle
 	{
-		//TODO: what about the last row ?????????????
 		fill_bottom_flat_triangle(aSurface, aP0, aP1, aP2, aC0, aC1, aC2);
 	}
 	else
@@ -117,10 +116,8 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 
 
 		// Draw the top and bottom flat triangles
-		// fill_top_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
-		// fill_bottom_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+        fill_top_flat_triangle(aSurface, aP0, p3, aP1, aC0, c3, aC1, false);
 		fill_bottom_flat_triangle(aSurface, p3, aP1, aP2, c3, aC1, aC2);
-        fill_top_flat_triangle(aSurface, aP0, p3, aP1, aC0, c3, aC1);
 
 	}
 }
@@ -286,12 +283,11 @@ void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP
     float invslope2 = (aP2.x - aP1.x) / (aP2.y - aP1.y); // Inverse slope of seconed edge
     float curx1 = aP0.x;
     float curx2 = aP1.x;
-	int width = aSurface.get_width();
     int height = aSurface.get_height();
 	ColorF interpolatedColor;
 
 	// Iterate from bottom (y0/y1) to top (y2) and fill the triangle
-    for (float scanlineY = aP0.y; scanlineY <= aP2.y; scanlineY++)
+    for (float scanlineY = aP0.y; scanlineY < aP2.y; scanlineY++)
     {
 		if (scanlineY >= 0 && scanlineY < height) { // Check that y isn't out of bounds
 			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
@@ -308,18 +304,21 @@ void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP
     }
 }
 
-void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2)
+void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2, bool aIsTrivialCase)
 {
     float invslope1 = (aP2.x - aP0.x) / (aP2.y - aP0.y); // Inverse slope of one edge
     float invslope2 = (aP1.x - aP0.x) / (aP1.y - aP0.y); // Inverse slope of seconed edge
     float curx1 = aP2.x;
     float curx2 = aP1.x;
-	int width = aSurface.get_width();
     int height = aSurface.get_height();
 	ColorF interpolatedColor;
 
+
+	float startY = aP2.y - 1;
+	if (aIsTrivialCase) startY = aP2.y; // Decide whether to draw the first row of the triangle to prevent overlapping rendering
+	
 	// Iterate from top (y2/y1) to bottom (y0) and fill the triangle
-    for (float scanlineY = aP2.y; scanlineY >= aP0.y; scanlineY--)
+    for (float scanlineY = startY; scanlineY >= aP0.y; scanlineY--)
     {
 		if (scanlineY >= 0 && scanlineY < height) {  // Check that y isn't out of bounds
 			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
