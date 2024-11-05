@@ -51,12 +51,33 @@ std::unique_ptr<ImageRGBA> load_image( char const* aPath )
 
 void blit_masked( Surface& aSurface, ImageRGBA const& aImage, Vec2f aPosition )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	(void)aSurface;  // Avoid warnings about unused arguments until the
-	(void)aImage;    // function is properly implemented.
-	(void)aPosition;
+	// Starting position to draw on surface
+    Vec2f startPosition = Vec2f{aPosition.x - (aImage.get_width() / 2), aPosition.y - (aImage.get_height() / 2)};
+    int startY = std::max(0, static_cast<int>(startPosition.y));
+    int startX = std::max(0, static_cast<int>(startPosition.x));
+
+    // Ending position to draw on surface
+    Vec2f endPosition = Vec2f{aImage.get_width() + startPosition.x, aImage.get_height() + startPosition.y};
+	int endY = std::min(static_cast<int>(endPosition.y), static_cast<int>(aSurface.get_height()));
+	int endX = std::min(static_cast<int>(endPosition.x), static_cast<int>(aSurface.get_width()));
+
+	for (int y = startY; y < endY; y++) 
+	{
+        for (int x = startX; x < endX; x++) 
+		{
+            // Relative position of (x,y) in the image
+            int imgXPos = x - static_cast<int>(startPosition.x);
+            int imgYPos = y - static_cast<int>(startPosition.y);
+            
+			ColorU8_sRGB_Alpha imagePixel = aImage.get_pixel(imgXPos, imgYPos); // Get the pixel from aImage
+
+			if (imagePixel.a >= 128) // Showing only input pixels with alpha value greater or equal to 128
+			{
+				ColorU8_sRGB aColor{imagePixel.r, imagePixel.g, imagePixel.b};
+				aSurface.set_pixel_srgb(x, y, aColor);
+			}
+		}
+	}
 }
 
 namespace
