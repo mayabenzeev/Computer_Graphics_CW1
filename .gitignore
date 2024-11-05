@@ -3,3 +3,4 @@ _build_/
 *.o
 *.a
 bin/*
+.vscode/*
