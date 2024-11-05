@@ -119,8 +119,8 @@ void draw_triangle_interp( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, C
 		// Draw the top and bottom flat triangles
 		// fill_top_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
 		// fill_bottom_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
-		fill_bottom_flat_triangle(aSurface, aP0, aP1, p3, aC0, aC1, c3);
-        fill_top_flat_triangle(aSurface, aP1, p3, aP2, aC1, c3, aC2);
+		fill_bottom_flat_triangle(aSurface, p3, aP1, aP2, c3, aC1, aC2);
+        fill_top_flat_triangle(aSurface, aP0, p3, aP1, aC0, c3, aC1);
 
 	}
 }
