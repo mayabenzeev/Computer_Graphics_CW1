@@ -19,8 +19,8 @@ ColorU8_sRGB convert_color_to_sRGB(ColorF aColor);
 void draw_line_solid( Surface& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
 	// Define the clipping region
-	Vec2f minPoint{0, 0};
-	Vec2f maxPoint{static_cast<float>(aSurface.get_width()) - 1, static_cast<float>(aSurface.get_height()) - 1};	
+	Vec2f minPoint{ 0, 0 };
+	Vec2f maxPoint{ static_cast<float>(aSurface.get_width() - 1), static_cast<float>(aSurface.get_height() - 1) };	
 	
 	// Clipping
     if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, minPoint, maxPoint)) 
@@ -154,70 +154,54 @@ bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f
 	int beginCode = get_point_region_code(aBegin, aMin, aMax);
 	int endCode = get_point_region_code(aEnd, aMin, aMax);
 
-	// If the line is completely outside the window it will be discarded
-	if ((beginCode & endCode) != 0)
-	{
-		return false;
-	}
+	
+    bool accept = false;
 
-	// If the line is completely inside the window no need to clip
-	if ((beginCode | endCode) == 0)
-	{
-		return true;
-	}
-       
-	float dx = aEnd.x - aBegin.x;
-	float dy = aEnd.y - aBegin.y;
+    while (true) {
+        if (!(beginCode | endCode)) // If the line is completely inside the window no need to clip
+		{
+            accept = true;
+            break;
+        } 
+		else if (beginCode & endCode) // If the line is completely outside the window it will be discarded
+		{
+            break;
+        } 
+		else 
+		{
+            float x, y;
+            // Pick the one endpoint is outside the clipping rectangle
+            int code_out = beginCode ? beginCode : endCode;
 
-	// If a point is outside the left boundary - if bit 1 is "1"
-	if (beginCode & 1)
-	{
-		aBegin.x = aMin.x;
-		aBegin.y += (dy / dx) * (aMin.x - aBegin.x);
-	}
-	else if (endCode & 1)
-	{
-		aEnd.x = aMin.x;
-		aEnd.y += (dy / dx) * (aMin.x - aEnd.x);
-	}
+            // Calculate the intersection point 
+            if (code_out & 8) { // Top
+                x = aBegin.x + (aEnd.x - aBegin.x) * (aMax.y - aBegin.y) / (aEnd.y - aBegin.y);
+                y = aMax.y;
+            } else if (code_out & 4) { // Bottom
+                x = aBegin.x + (aEnd.x - aBegin.x) * (aMin.y - aBegin.y) / (aEnd.y - aBegin.y);
+                y = aMin.y;
+            } else if (code_out & 2) { // Right
+                y = aBegin.y + (aEnd.y - aBegin.y) * (aMax.x - aBegin.x) / (aEnd.x - aBegin.x);
+                x = aMax.x;
+            } else if (code_out & 1) { // Left
+                y = aBegin.y + (aEnd.y - aBegin.y) * (aMin.x - aBegin.x) / (aEnd.x - aBegin.x);
+                x = aMin.x;
+            }
 
-	// If a point is outside the right boundary - if bit 2 is "1"
-	if (beginCode & 2)
-	{
-		aBegin.x = aMax.x;
-		aBegin.y += dy * (aMax.x - aBegin.x) / dx;
-	}
-	else if (endCode & 2)
-	{
-		aEnd.x = aMax.x;
-		aEnd.y += dy * (aMax.x - aEnd.x) / dx;
-	}
+            // Replace the outside point with the intersection point
+            if (code_out == beginCode) {
+                aBegin.x = x;
+                aBegin.y = y;
+                beginCode = get_point_region_code(aBegin, aMin, aMax);
+            } else {
+                aEnd.x = x;
+                aEnd.y = y;
+                endCode = get_point_region_code(aEnd, aMin, aMax);
+            }
+        }
+    }
 
-	// If a point is outside the bottom boundary - if bit 3 is "1"
-	if (beginCode & 4)
-	{
-		aBegin.y = aMin.y;
-		aBegin.x += dx * (aMin.y - aBegin.y) / dy;
-	}
-	else if (endCode & 4)
-	{
-		aEnd.y = aMin.y;
-		aEnd.x += dx * (aMin.y - aEnd.y) / dy;
-	}
-
-	// If a point is outside the top boundary - if bit 4 is "1"
-	if (beginCode & 8)
-	{
-		aBegin.y = aMax.y;
-		aBegin.x += dx * (aMax.y - aBegin.y) / dy;
-	}
-	else if (endCode & 8)
-	{
-		aEnd.y = aMax.y;
-		aEnd.x += dx * (aMax.y - aEnd.y) / dy;
-	}
-
-	return true;
+    return accept;
 }
 
 int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax )
