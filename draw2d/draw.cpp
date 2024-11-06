@@ -171,25 +171,25 @@ bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f
 		{
             float x, y;
             // Pick the one endpoint is outside the clipping rectangle
-            int code_out = beginCode ? beginCode : endCode;
+            int codeOut = beginCode ? beginCode : endCode;
 
             // Calculate the intersection point 
-            if (code_out & 8) { // Top
+            if (codeOut & 8) { // Top
                 x = aBegin.x + (aEnd.x - aBegin.x) * (aMax.y - aBegin.y) / (aEnd.y - aBegin.y);
                 y = aMax.y;
-            } else if (code_out & 4) { // Bottom
+            } else if (codeOut & 4) { // Bottom
                 x = aBegin.x + (aEnd.x - aBegin.x) * (aMin.y - aBegin.y) / (aEnd.y - aBegin.y);
                 y = aMin.y;
-            } else if (code_out & 2) { // Right
+            } else if (codeOut & 2) { // Right
                 y = aBegin.y + (aEnd.y - aBegin.y) * (aMax.x - aBegin.x) / (aEnd.x - aBegin.x);
                 x = aMax.x;
-            } else if (code_out & 1) { // Left
+            } else if (codeOut & 1) { // Left
                 y = aBegin.y + (aEnd.y - aBegin.y) * (aMin.x - aBegin.x) / (aEnd.x - aBegin.x);
                 x = aMin.x;
             }
 
             // Replace the outside point with the intersection point
-            if (code_out == beginCode) {
+            if (codeOut == beginCode) {
                 aBegin.x = x;
                 aBegin.y = y;
                 beginCode = get_point_region_code(aBegin, aMin, aMax);

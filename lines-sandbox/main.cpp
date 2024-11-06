@@ -185,7 +185,6 @@ int main( int aArgc, char* aArgv[] ) try
 
 		// Draw scene
 		surface.clear();
-
 		switch( testId )
 		{
 			case 1: {
@@ -244,6 +243,15 @@ int main( int aArgc, char* aArgv[] ) try
 					{ 255, 255, 0 } 
 			);
 			} break;
+			case 8: {
+				ColorU8_sRGB expectedColor = {255, 0, 0};
+
+				// y = x + 20
+				draw_line_solid( surface, 
+					{ 0.f, 20.f }, 
+					{ 1280.f, 1300.f }, 
+					expectedColor);
+			}
 		}
 		
 		context.draw( surface );

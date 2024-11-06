@@ -6,7 +6,7 @@
 
 #include "helpers.hpp"
 
-TEST_CASE("Fully Out of Bounds Endpoints", "[lines]")
+TEST_CASE("Fully Out of Bounds Endpoints", "[clip]")
 {
     Surface surface(500, 300);
     surface.clear();
@@ -60,7 +60,6 @@ TEST_CASE("Fully Out of Bounds Endpoints", "[lines]")
         REQUIRE( startPtr[1] == expectedColor.g );
         REQUIRE( startPtr[2] == expectedColor.b );
 
-        // Validate the pixel color at the clipped end point
         auto endIdx = surface.get_linear_index(clippedEndX, clippedEndY);
         auto endPtr = surface.get_surface_ptr() + endIdx;
         REQUIRE( endPtr[0] == expectedColor.r );
