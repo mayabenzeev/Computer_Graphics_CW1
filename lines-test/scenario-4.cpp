@@ -6,7 +6,7 @@
 
 #include "helpers.hpp"
 
-TEST_CASE( "No gaps 2 lines with mutual endpoint", "[mutual single endpoint]" )
+TEST_CASE( "2 lines with mutual pixels", "[mutual pixels]" )
 {
     Surface surface(200, 200);
     surface.clear();
@@ -89,13 +89,12 @@ TEST_CASE( "No gaps 2 lines with mutual endpoint", "[mutual single endpoint]" )
     }
 }
 
-TEST_CASE( "No gaps multi lines with mutual endpoint", "[mutual multi endpoints]" )
+TEST_CASE( "3 lines with mutual pixels", "[mutual pixels]" )
 {
     Surface surface(200, 200);
     surface.clear();
             
     Vec2f mutualP0 { 20.f, 100.f };
-    Vec2f mutualP1 { 40.f, 120.f };
     ColorU8_sRGB expectedColor = {255, 0, 0};
 
     SECTION( "short multi lines" ) 
@@ -138,7 +137,7 @@ TEST_CASE( "No gaps multi lines with mutual endpoint", "[mutual multi endpoints]
     {
         // Tests when there is an intersection point between p0-p1 and p2-p3 
         // p0-p1 -> y = 100
-        // p2-p3 -> y = 2x
+        // p2-p3 -> y = x + 50
         draw_line_solid( surface, 
             { 0.f, 100.f }, 
             { 100.f, 100.f },
@@ -146,11 +145,11 @@ TEST_CASE( "No gaps multi lines with mutual endpoint", "[mutual multi endpoints]
 
         draw_line_solid( surface,
             { 100.f, 100.f },
-            { 100.f, 200.f }, 
+            { 100.f, 150.f }, 
             expectedColor);
 
         draw_line_solid( surface,
-            { 100.f, 200.f },
+            { 100.f, 150.f },
             { 50.f, 100.f }, 
             expectedColor);
 
@@ -168,23 +167,4 @@ TEST_CASE( "No gaps multi lines with mutual endpoint", "[mutual multi endpoints]
         REQUIRE( ptr[2] == expectedColor.b );
     
     }
-
-    // SECTION("very short lines that create a square") {
-    //     Vec2f startPoint {10.f, 10.f};
-    //     Vec2f rightPoint {11.f, 10.f};
-    //     Vec2f bottomRightPoint {11.f, 11.f};
-    //     Vec2f bottomLeftPoint {10.f, 11.f};
-
-    //     draw_line_solid(surface, startPoint, rightPoint, expectedColor);
-    //     draw_line_solid(surface, rightPoint, bottomRightPoint, expectedColor);
-    //     draw_line_solid(surface, bottomRightPoint, bottomLeftPoint, expectedColor);
-    //     draw_line_solid(surface, bottomLeftPoint, startPoint, expectedColor);
-
-    //     int expectedAxisPixels = 2;  // Adjusting expectation as each point affects 2 rows and 2 columns minimally
-    //     auto rowPixels = max_row_pixel_count(surface);
-    //     auto colPixels = max_col_pixel_count(surface);
-
-    //     REQUIRE(rowPixels == expectedAxisPixels);
-    //     REQUIRE(colPixels == expectedAxisPixels);
-    // }
 }

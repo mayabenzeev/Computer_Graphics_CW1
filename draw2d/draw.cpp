@@ -239,7 +239,6 @@ void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF 
 Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT)
 {
 	// Calculate the x-coordinate of the intersection point
-	// float x = aP0.x + aT * (aP2.x - aP0.x);
 	float x = (1 - aT) * aP0.x + aT * aP2.x;
     return Vec2f{x, aP1.y};
 }

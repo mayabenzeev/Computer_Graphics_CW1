@@ -35,23 +35,23 @@ TEST_CASE("Fully Out of Bounds Endpoints", "[clip]")
         REQUIRE(pixels == surface.get_height());  // Full column coverage the size of the surface height
     }
 
-    SECTION( "diagonal cross left and right edges" )
+    SECTION( "diagonal cross left and top edges" )
     {
         ColorU8_sRGB expectedColor = {255, 255, 0};
 
-        // y = 0.5x 
+        // y = x + 20
         draw_line_solid( surface, 
-            { -100.f, -50.f }, 
-            { 600.f, 300.f }, 
+            { -100.f, -80.f }, 
+            { 600.f, 620.f }, 
             expectedColor);
 
         // Calculate the expected line intersection point with left bound
         int clippedStartX = 0; 
-        int clippedStartY = static_cast<int>(clippedStartX * 0.5);
+        int clippedStartY = static_cast<int>(clippedStartX) + 20;
 
         // Calculate the expected line intersection point with right bound
-        int clippedEndX = surface.get_width() - 1;
-        int clippedEndY = static_cast<int>(clippedEndX * 0.5); 
+        int clippedEndY = surface.get_height() - 1;
+        int clippedEndX = static_cast<int>(clippedEndY) - 20; 
 
         // Check the colors of the expected in-bound endpoints pixels after clipping
         auto startIdx = surface.get_linear_index(clippedStartX, clippedStartY);
@@ -72,19 +72,19 @@ TEST_CASE("Fully Out of Bounds Endpoints", "[clip]")
     {
         ColorU8_sRGB expectedColor = {255, 255, 0};
 
-        // y = 2x - 200
+        // y = x - 300
         draw_line_solid( surface, 
-            { 50.f, -100.f }, 
-            { 300.f, 400.f }, 
+            { -50.f, -350.f }, 
+            { 500.f, 200.f }, 
             expectedColor);
 
         // Calculate the expected line intersection point with down bound
         int clippedStartY = 0;
-        int clippedStartX = static_cast<int>((clippedStartY  + 200) / 2); 
+        int clippedStartX = static_cast<int>(clippedStartY) + 300; 
 
         // Calculate the expected line intersection point with right bound
-        int clippedEndY = surface.get_height() - 1;
-        int clippedEndX = static_cast<int>((clippedStartY + 200) / 2); 
+        int clippedEndX = surface.get_width() - 1;
+        int clippedEndY = static_cast<int>(clippedEndX) - 300; 
     
         // Check the colors of the expected in-bound endpoints pixels after clipping
         auto startIdx = surface.get_linear_index(clippedStartX, clippedStartY);
