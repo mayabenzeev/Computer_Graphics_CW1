@@ -19,6 +19,7 @@
 #include "../vmlib/vec2.hpp"
 #include "../vmlib/mat22.hpp"
 
+#include "../triangles-test/helpers.hpp"
 namespace
 {
 	constexpr char const* kWindowTitle = "COMP3811-Tests: Triangles";
@@ -285,6 +286,7 @@ int main( int aArgc, char* aArgv[] ) try
 				);
 			} break;
 		}
+
 		
 		context.draw( surface );
 
