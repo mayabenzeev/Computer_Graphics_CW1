@@ -9,7 +9,7 @@
 // Helper Functions Declarations
 bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f minPoint, Vec2f aMax );
 int get_point_region_code( Vec2f aPoint, Vec2f minPoint, Vec2f aMax );
-void sort_vertices_ascending_y_order( Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, ColorF aC0, ColorF aC1, ColorF aC2 );
+void sort_vertices_ascending_y_order( Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, ColorF& aC0, ColorF& aC1, ColorF& aC2 );
 Vec2f interpolate_line(Vec2f& aP0, Vec2f& aP1, Vec2f& aP2, float aT);
 ColorF interpolate_color(const Vec2f& aP0, const Vec2f& aP1, const Vec2f& aP2, const ColorF& aC0, const ColorF& aC1, const ColorF& aC2, const Vec2f& aNewP);
 void fill_top_flat_triangle( Surface& aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, ColorF aC0, ColorF aC1, ColorF aC2 ,bool aIsTrivialCase );
@@ -169,7 +169,7 @@ bool cohen_sutherland_clip( Surface& aSurface, Vec2f& aBegin, Vec2f& aEnd, Vec2f
         } 
 		else 
 		{
-            float x, y;
+            float x = 0.0, y = 0.0;
             // Pick the one endpoint is outside the clipping rectangle
             int codeOut = beginCode ? beginCode : endCode;
 
@@ -216,7 +216,7 @@ int get_point_region_code( Vec2f aPoint, Vec2f aMin, Vec2f aMax )
 	return code;
 }
 
-void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF aC0, ColorF aC1, ColorF aC2 )
+void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF &aC0, ColorF &aC1, ColorF &aC2 )
 {
 	// Sort the vertices in ascending order of y-coordinates
 	if (aP0.y > aP1.y)
@@ -224,15 +224,15 @@ void sort_vertices_ascending_y_order(Vec2f &aP0, Vec2f &aP1, Vec2f &aP2, ColorF 
 		std::swap(aP0, aP1);
 		std::swap(aC0, aC1);
 	}
-	if (aP0.y > aP2.y)
-	{
-		std::swap(aP0, aP2);
-		std::swap(aC0, aC2);
-	}
 	if (aP1.y > aP2.y)
 	{
 		std::swap(aP1, aP2);
 		std::swap(aC1, aC2);
+	}
+	if (aP0.y > aP1.y)
+	{
+		std::swap(aP0, aP1);
+		std::swap(aC0, aC1);
 	}
 }
 

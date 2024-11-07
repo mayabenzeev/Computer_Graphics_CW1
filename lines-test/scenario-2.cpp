@@ -22,8 +22,8 @@ TEST_CASE("Partially Out of Bounds Endpoints", "[clip]")
             endP, 
             { 255, 0, 0 });
 
-        auto const pixels = max_row_pixel_count(surface);
-        int expectedPixels = surface.get_width() - startP.x;  // Expected number of pixels 
+        std::uint32_t const pixels = max_row_pixel_count(surface);
+        std::uint32_t expectedPixels = surface.get_width() - startP.x;  // Expected number of pixels 
 
         REQUIRE(pixels == expectedPixels);  // Pixels drawn up to boundary
     }
@@ -39,8 +39,8 @@ TEST_CASE("Partially Out of Bounds Endpoints", "[clip]")
             endP, 
             { 255, 0, 0 });
 
-        auto const pixels = max_col_pixel_count(surface);
-        int expectedPixels = endP.y - 0 + 1;  // Expected number of pixels 
+        std::uint32_t const pixels = max_col_pixel_count(surface);
+        std::uint32_t expectedPixels = endP.y - 0 + 1;  // Expected number of pixels 
 
         REQUIRE(pixels == expectedPixels);  // Pixels drawn up to boundary
     }

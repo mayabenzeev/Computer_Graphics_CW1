@@ -18,22 +18,13 @@ endif
 # Configurations
 # #############################################
 
-ifeq ($(origin CC), default)
-  CC = clang
-endif
-ifeq ($(origin CXX), default)
-  CXX = clang++
-endif
-ifeq ($(origin AR), default)
-  AR = ar
-endif
+RESCOMP = windres
 INCLUDES += -Istb/include -Iglad/include -Iglfw/include -Icatch2/include -Ibenchmark/include
 FORCE_INCLUDE +=
-ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
+ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-LIBS += -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework QuartzCore
+LIBS += -ldl
 LDDEPS +=
-ALL_LDFLAGS += $(LDFLAGS) -m64 -pthread
 LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
 define PREBUILDCMDS
 endef
@@ -44,19 +35,21 @@ endef
 
 ifeq ($(config),debug_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libx-benchmark-debug-x64-clang.a
-OBJDIR = ../_build_/debug-x64-clang/x64/debug/x-benchmark
-DEFINES += -D_DEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
+TARGET = $(TARGETDIR)/libx-benchmark-debug-x64-gcc.a
+OBJDIR = ../_build_/debug-x64-gcc/x64/debug/x-benchmark
+DEFINES += -D_DEBUG=1 -DBENCHMARK_STATIC_DEFINE=1 -DBENCHMARK_HAS_PTHREAD_AFFINITY=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -pthread
 
 else ifeq ($(config),release_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libx-benchmark-release-x64-clang.a
-OBJDIR = ../_build_/release-x64-clang/x64/release/x-benchmark
-DEFINES += -DNDEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
+TARGET = $(TARGETDIR)/libx-benchmark-release-x64-gcc.a
+OBJDIR = ../_build_/release-x64-gcc/x64/release/x-benchmark
+DEFINES += -DNDEBUG=1 -DBENCHMARK_STATIC_DEFINE=1 -DBENCHMARK_HAS_PTHREAD_AFFINITY=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -pthread
 
 endif
 
@@ -147,7 +140,7 @@ ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -rf $(OBJDIR)
 else
 	$(SILENT) if exist $(subst /,\\,$(TARGET)) del $(subst /,\\,$(TARGET))
-	$(SILENT) if exist $(subst /,\\,$(GENERATED)) del /s /q $(subst /,\\,$(GENERATED))
+	$(SILENT) if exist $(subst /,\\,$(GENERATED)) rmdir /s /q $(subst /,\\,$(GENERATED))
 	$(SILENT) if exist $(subst /,\\,$(OBJDIR)) rmdir /s /q $(subst /,\\,$(OBJDIR))
 endif
 
@@ -174,64 +167,64 @@ endif
 # #############################################
 
 $(OBJDIR)/benchmark.o: benchmark/src/benchmark.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/benchmark_api_internal.o: benchmark/src/benchmark_api_internal.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/benchmark_main.o: benchmark/src/benchmark_main.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/benchmark_name.o: benchmark/src/benchmark_name.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/benchmark_register.o: benchmark/src/benchmark_register.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/benchmark_runner.o: benchmark/src/benchmark_runner.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/check.o: benchmark/src/check.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/colorprint.o: benchmark/src/colorprint.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/commandlineflags.o: benchmark/src/commandlineflags.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/complexity.o: benchmark/src/complexity.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/console_reporter.o: benchmark/src/console_reporter.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/counter.o: benchmark/src/counter.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/csv_reporter.o: benchmark/src/csv_reporter.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/json_reporter.o: benchmark/src/json_reporter.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/perf_counters.o: benchmark/src/perf_counters.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/reporter.o: benchmark/src/reporter.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/statistics.o: benchmark/src/statistics.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/string_util.o: benchmark/src/string_util.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/sysinfo.o: benchmark/src/sysinfo.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/timers.o: benchmark/src/timers.cc
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 -include $(OBJECTS:%.o=%.d)

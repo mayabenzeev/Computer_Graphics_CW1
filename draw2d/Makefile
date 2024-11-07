@@ -18,22 +18,13 @@ endif
 # Configurations
 # #############################################
 
-ifeq ($(origin CC), default)
-  CC = clang
-endif
-ifeq ($(origin CXX), default)
-  CXX = clang++
-endif
-ifeq ($(origin AR), default)
-  AR = ar
-endif
+RESCOMP = windres
 INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/catch2/include -I../third_party/benchmark/include
 FORCE_INCLUDE +=
-ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
+ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-LIBS += -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework QuartzCore
+LIBS += -ldl
 LDDEPS +=
-ALL_LDFLAGS += $(LDFLAGS) -m64 -pthread
 LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
 define PREBUILDCMDS
 endef
@@ -44,19 +35,21 @@ endef
 
 ifeq ($(config),debug_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libdraw2d-debug-x64-clang.a
-OBJDIR = ../_build_/debug-x64-clang/x64/debug/draw2d
+TARGET = $(TARGETDIR)/libdraw2d-debug-x64-gcc.a
+OBJDIR = ../_build_/debug-x64-gcc/x64/debug/draw2d
 DEFINES += -D_DEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -pthread
 
 else ifeq ($(config),release_x64)
 TARGETDIR = ../lib
-TARGET = $(TARGETDIR)/libdraw2d-release-x64-clang.a
-OBJDIR = ../_build_/release-x64-clang/x64/release/draw2d
+TARGET = $(TARGETDIR)/libdraw2d-release-x64-gcc.a
+OBJDIR = ../_build_/release-x64-gcc/x64/release/draw2d
 DEFINES += -DNDEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -march=native -Wall -pthread -Werror=vla
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -pthread
 
 endif
 
@@ -119,7 +112,7 @@ ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -rf $(OBJDIR)
 else
 	$(SILENT) if exist $(subst /,\\,$(TARGET)) del $(subst /,\\,$(TARGET))
-	$(SILENT) if exist $(subst /,\\,$(GENERATED)) del /s /q $(subst /,\\,$(GENERATED))
+	$(SILENT) if exist $(subst /,\\,$(GENERATED)) rmdir /s /q $(subst /,\\,$(GENERATED))
 	$(SILENT) if exist $(subst /,\\,$(OBJDIR)) rmdir /s /q $(subst /,\\,$(OBJDIR))
 endif
 
@@ -146,22 +139,22 @@ endif
 # #############################################
 
 $(OBJDIR)/draw-ex.o: draw-ex.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/draw.o: draw.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/image.o: image.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/shape.o: shape.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/surface-ex.o: surface-ex.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/surface.o: surface.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 -include $(OBJECTS:%.o=%.d)

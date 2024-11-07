@@ -18,20 +18,11 @@ endif
 # Configurations
 # #############################################
 
-ifeq ($(origin CC), default)
-  CC = clang
-endif
-ifeq ($(origin CXX), default)
-  CXX = clang++
-endif
-ifeq ($(origin AR), default)
-  AR = ar
-endif
+RESCOMP = windres
 INCLUDES += -I../third_party/stb/include -I../third_party/glad/include -I../third_party/glfw/include -I../third_party/catch2/include -I../third_party/benchmark/include
 FORCE_INCLUDE +=
-ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
+ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-ALL_LDFLAGS += $(LDFLAGS) -m64 -pthread
 LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
 define PREBUILDCMDS
 endef
@@ -42,23 +33,25 @@ endef
 
 ifeq ($(config),debug_x64)
 TARGETDIR = ../bin
-TARGET = $(TARGETDIR)/lines-test-debug-x64-clang.exe
-OBJDIR = ../_build_/debug-x64-clang/x64/debug/lines-test
+TARGET = $(TARGETDIR)/lines-test-debug-x64-gcc.exe
+OBJDIR = ../_build_/debug-x64-gcc/x64/debug/lines-test
 DEFINES += -D_DEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20 -march=native -Wall -pthread -Werror=vla
-LIBS += ../lib/libvmlib-debug-x64-clang.a ../lib/libdraw2d-debug-x64-clang.a ../lib/libx-catch2-debug-x64-clang.a -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework QuartzCore
-LDDEPS += ../lib/libvmlib-debug-x64-clang.a ../lib/libdraw2d-debug-x64-clang.a ../lib/libx-catch2-debug-x64-clang.a
+LIBS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libdraw2d-debug-x64-gcc.a ../lib/libx-catch2-debug-x64-gcc.a -ldl
+LDDEPS += ../lib/libvmlib-debug-x64-gcc.a ../lib/libdraw2d-debug-x64-gcc.a ../lib/libx-catch2-debug-x64-gcc.a
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -pthread
 
 else ifeq ($(config),release_x64)
 TARGETDIR = ../bin
-TARGET = $(TARGETDIR)/lines-test-release-x64-clang.exe
-OBJDIR = ../_build_/release-x64-clang/x64/release/lines-test
+TARGET = $(TARGETDIR)/lines-test-release-x64-gcc.exe
+OBJDIR = ../_build_/release-x64-gcc/x64/release/lines-test
 DEFINES += -DNDEBUG=1 -DBENCHMARK_STATIC_DEFINE=1
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -march=native -Wall -pthread -Werror=vla
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2 -std=c++20 -march=native -Wall -pthread -Werror=vla
-LIBS += ../lib/libvmlib-release-x64-clang.a ../lib/libdraw2d-release-x64-clang.a ../lib/libx-catch2-release-x64-clang.a -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework QuartzCore
-LDDEPS += ../lib/libvmlib-release-x64-clang.a ../lib/libdraw2d-release-x64-clang.a ../lib/libx-catch2-release-x64-clang.a
+LIBS += ../lib/libvmlib-release-x64-gcc.a ../lib/libdraw2d-release-x64-gcc.a ../lib/libx-catch2-release-x64-gcc.a -ldl
+LDDEPS += ../lib/libvmlib-release-x64-gcc.a ../lib/libdraw2d-release-x64-gcc.a ../lib/libx-catch2-release-x64-gcc.a
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -pthread
 
 endif
 
@@ -129,7 +122,7 @@ ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -rf $(OBJDIR)
 else
 	$(SILENT) if exist $(subst /,\\,$(TARGET)) del $(subst /,\\,$(TARGET))
-	$(SILENT) if exist $(subst /,\\,$(GENERATED)) del /s /q $(subst /,\\,$(GENERATED))
+	$(SILENT) if exist $(subst /,\\,$(GENERATED)) rmdir /s /q $(subst /,\\,$(GENERATED))
 	$(SILENT) if exist $(subst /,\\,$(OBJDIR)) rmdir /s /q $(subst /,\\,$(OBJDIR))
 endif
 
@@ -156,34 +149,34 @@ endif
 # #############################################
 
 $(OBJDIR)/clip.o: clip.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/connected.o: connected.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/cull.o: cull.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/helpers.o: helpers.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-1.o: scenario-1.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-2.o: scenario-2.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-3.o: scenario-3.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/scenario-4.o: scenario-4.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/specials.o: specials.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/thin_line.o: thin_line.cpp
-	@echo "$(notdir $<)"
+	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 -include $(OBJECTS:%.o=%.d)
