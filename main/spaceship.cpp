@@ -9,7 +9,7 @@
  *  0. If you are OK with your space ship design being included in future
  *     computer graphics exercises and/or courseworks, please indicate this by
  *     placing a 'X' in the space between the [ ] on the following line:
- *     [ ] I give permission for my space ship shape to be used in future
+ *     [X] I give permission for my space ship shape to be used in future
  *         computer graphics exercises and/or courseworks.
  *
  *     If you do not wish for your shape to be used, leave the line as is.
@@ -40,7 +40,7 @@
 #define SPACESHIP_CUSTOM 2
 
 #ifndef SPACESHIP
-#	define SPACESHIP SPACESHIP_DEFAULT
+#	define SPACESHIP SPACESHIP_CUSTOM
 #endif
 
 LineStrip make_spaceship_shape()
@@ -76,9 +76,20 @@ LineStrip make_spaceship_shape()
 	} };
 #	elif SPACESHIP == SPACESHIP_CUSTOM
 	LineStrip spaceship{ {
-
-		// TODO: YOUR DESIGN GOES HERE
-	
+		{-50.f, -10.f}, // Eraser end of the pencil
+		{-50.f, 10.f},
+		{50.f, 10.f},
+		{60.f, 5.f},
+		{70.f, 0.f}, // Pencil tip
+		{60.f, -5.f},
+		{50.f, -10.f},
+		{50.f, 10.f},
+		{50.f, 3.4},
+		{-50.f, 3.4},
+		{-50.f, -3.2},
+		{50.f, -3.2},
+		{50.f, -10.f},
+		{-50.f, -10.f} // link back to beginning 
 	} };
 #	endif
 
