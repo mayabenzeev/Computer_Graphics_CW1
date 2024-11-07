@@ -275,16 +275,18 @@ void fill_bottom_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP
 	// Iterate from bottom (y0/y1) to top (y2) and fill the triangle
     for (float scanlineY = startY; scanlineY < endY; scanlineY++)
     {
-		if (scanlineY >= 0 && scanlineY < height) { // Check that y isn't out of bounds
-		int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-		int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+		// if (scanlineY >= 0 && scanlineY < height) { // Check that y isn't out of bounds
+			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
+			int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
 
+			int clippedFromX = std::max(fromX, 0);
+        	int clippedToX = std::min(toX, width - 1);
 
-		for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(width - 1)); x++) {
-			interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
-			aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
-			}
-		}
+			for (int x = clippedFromX; x <= clippedToX; x++) {
+            interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
+            aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
+        }
+		// }
 
         curx1 += invslope1;
         curx2 += invslope2;
@@ -305,7 +307,7 @@ void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, 
 	float startY = 0.0f;
 	if (!aIsTrivialCase) startY = std::max(aP2.y, startY); // Decide whether to draw the first row of the triangle to prevent overlapping rendering
 	else startY = std::max(aP2.y - 1, startY);
-    float endY = std::min(aP0.y, static_cast<float>(height + 1));
+    float endY = std::min(aP0.y, static_cast<float>(height - 1));
 	
 	// Iterate from top (y2/y1) to bottom (y0) and fill the triangle
     for (float scanlineY = startY; scanlineY >= endY; scanlineY--)
@@ -313,10 +315,13 @@ void fill_top_flat_triangle(Surface &aSurface, Vec2f aP0, Vec2f aP1, Vec2f aP2, 
 		if (scanlineY >= 0 && scanlineY < height) {  // Check that y isn't out of bounds
 			int fromX = std::min(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
 			int toX = std::max(static_cast<int>(std::round(curx1)), static_cast<int>(std::round(curx2)));
-			for (int x = std::max(fromX, 0); x <= std::min(toX, static_cast<int>(width - 1)); x++) {
+
+			int clippedFromX = std::max(fromX, 0);
+        	int clippedToX = std::min(toX, width - 1);
+
+			for (int x = clippedFromX; x <= clippedToX; x++) {
 				interpolatedColor = interpolate_color(aP0, aP1, aP2, aC0, aC1, aC2, Vec2f{static_cast<float>(x), scanlineY});
 				aSurface.set_pixel_srgb(x, static_cast<int>(scanlineY), convert_color_to_sRGB(interpolatedColor));
-			
 			}
 		}
 		curx1 -= invslope1;
