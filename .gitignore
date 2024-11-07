@@ -6,3 +6,4 @@ bin/*
 .vscode/*
 .DS_Store
 lib/*.a
+.DS_Store
