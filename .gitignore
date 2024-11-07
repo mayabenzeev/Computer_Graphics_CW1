@@ -4,3 +4,5 @@ _build_/
 *.a
 bin/*
 .vscode/*
+.DS_Store
+lib/*.a
