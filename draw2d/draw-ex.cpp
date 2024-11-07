@@ -7,17 +7,37 @@
 #include "image.hpp"
 #include "surface-ex.hpp"
 
+#include "draw.cpp"
+
 void draw_ex_line_solid( SurfaceEx& aSurface, Vec2f aBegin, Vec2f aEnd, ColorU8_sRGB aColor )
 {
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
-	//TODO: your implementation goes here
+	// Define the clipping region
+	Vec2f minPoint{ 0, 0 };
+	Vec2f maxPoint{ static_cast<float>(aSurface.get_width() - 1), static_cast<float>(aSurface.get_height() - 1) };	
+	
+	// Clipping
+    if (!cohen_sutherland_clip(aSurface, aBegin, aEnd, minPoint, maxPoint)) 
+	{
+        return; // No need to draw the line
+    }
 
-	//TODO: remove the following when you start your implementation
-	(void)aSurface; // Avoid warnings about unused arguments until the function
-	(void)aBegin;   // is properly implemented.
-	(void)aEnd;
-	(void)aColor;
+    float x = aBegin.x;
+    float y = aBegin.y;
+
+	// Calculate the length of the line in each direction
+	float dx = (aEnd.x - aBegin.x);
+    float dy = (aEnd.y - aBegin.y);
+
+    // Calculate the number of steps to take
+    int steps = std::max(abs(dx), abs(dy));
+    float xInc = dx / steps;
+    float yInc = dy / steps;
+
+    for (int i = 0; i <= steps; i++) {
+        aSurface.set_pixel_srgb(static_cast<int>(round(x)), static_cast<int>(round(y)), aColor);
+        x += xInc;
+        y += yInc;
+    }
 }
 
 void blit_ex_solid( SurfaceEx& aSurface, ImageRGBA const& aImage, Vec2f aPosition )

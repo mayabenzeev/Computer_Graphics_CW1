@@ -4,34 +4,59 @@
 #include "../draw2d/draw-ex.hpp"
 #include "../draw2d/surface-ex.hpp"
 
-namespace
-{
-	// This is a placeholder. Replace this with yor own code. Refer to
-	// blit-benchmark/main.cpp for a more complete example. 
-	void placeholder_( benchmark::State& aState )
-	{
-		auto const width = std::uint32_t(aState.range(0));
-		auto const height = std::uint32_t(aState.range(1));
+namespace {
 
-		SurfaceEx surface( width, height );
+    void benchmark_bresenham(benchmark::State& state) {
+		auto width = std::uint32_t(state.range(0));
+        auto height = std::uint32_t(state.range(1));
+        SurfaceEx surface(width, height);
 		surface.clear();
+		
+        ColorU8_sRGB color{255, 255, 255}; 
 
-		for( auto _ : aState )
+        Vec2f start(state.range(2), state.range(3));
+        Vec2f end(state.range(4), state.range(5));
+
+        for (auto _ : state) 
 		{
-			// Placeholder that just does something:
-			surface.clear(); // PLACEHOLDER! EXCLUDE FROM REAL BENCHMARKS!
+            draw_line_solid(surface, start, end, color);
+            benchmark::ClobberMemory();
+        }
+    }
 
-			// ClobberMemory() ensures that the compiler won't optimize away
-			// our blit operation. (Unlikely, but technically poossible.)
-			benchmark::ClobberMemory(); 
-		}
-	}
+    void benchmark_dda(benchmark::State& state) {
+		auto width = std::uint32_t(state.range(0));
+        auto height = std::uint32_t(state.range(1));
+        SurfaceEx surface(width, height);
+		surface.clear();    
+
+        ColorU8_sRGB color{255, 255, 255}; 
+
+        Vec2f start(state.range(2), state.range(3));
+        Vec2f end(state.range(4), state.range(5));
+
+        for (auto _ : state) 
+		{
+            draw_ex_line_solid(surface, start, end, color);
+            benchmark::ClobberMemory();
+        }
+    }
 }
 
-BENCHMARK( placeholder_ )
-	->Args( { 1920, 1080 } )
-	->Args( { 7680, 4320 } )
-;
+BENCHMARK(benchmark_bresenham)
+	->Args({320, 240, 0, 120, 319, 120})  // Horizontal, small
+	->Args({320, 240, 320, 0, 320, 239}) // Vertical, small
+	->Args({320, 240, 0, 0, 319, 239}) // Diagonal, small
+	->Args({1920, 1080, 0, 540, 1919, 540})  // Horizontal, Full HD
+	->Args({1920, 1080, 960, 0, 960, 1079}) // Vertical, Full HD
+	->Args({1920, 1080, 0, 0, 1919, 1079}); // Diagonal, Full HD
 
+BENCHMARK(benchmark_dda)
+	->Args({320, 240, 0, 120, 319, 120})  // Horizontal, small
+	->Args({320, 240, 320, 0, 320, 239}) // Vertical, small
+	->Args({320, 240, 0, 0, 319, 239}) // Diagonal, small
+	->Args({1920, 1080, 0, 540, 1919, 540})  // Horizontal, Full HD
+	->Args({1920, 1080, 960, 0, 960, 1079}) // Vertical, Full HD
+	->Args({1920, 1080, 0, 0, 1919, 1079}); // Diagonal, Full HD
 
 BENCHMARK_MAIN();
